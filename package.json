@@ -9,6 +9,7 @@
   "author": "bityogi",
   "license": "ISC",
   "dependencies": {
-    "bitcoin": "^3.0.1"
+    "bitcoin": "^3.0.1",
+    "q": "^1.4.1"
   }
 }
