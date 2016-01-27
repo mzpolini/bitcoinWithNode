@@ -1,0 +1,14 @@
+{
+  "name": "bitcoinjs",
+  "version": "1.0.0",
+  "description": "using javascript to write my very first bitcoin program",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "bityogi",
+  "license": "ISC",
+  "dependencies": {
+    "bitcoin": "^3.0.1"
+  }
+}
