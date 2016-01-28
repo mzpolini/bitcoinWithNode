@@ -1,7 +1,7 @@
 var bitcoin = require('bitcoin');
 var Q = require('q');
 
-var bip100re = new RegExp('BIP100|BV[0-9]{7}');
+
 
 var client = new bitcoin.Client({
   host:'localhost',
@@ -10,7 +10,12 @@ var client = new bitcoin.Client({
   pass:'3QtnxrB7P5y4EpBdad1MkCeB2RHmArvcarw7udgXsAce'
 });
 
-
+var bip100re = new RegExp('BIP100|BV[0-9]{7}');
+var bip100Support = 0;
+var notBip100Support = 0;
+var blocksChecked = 0;
+var blocksToLoop = 10;
+var previousBlockHash = '';
 
 function getBestBlock() {
   var defer = Q.defer();
@@ -32,7 +37,7 @@ function getBlock(blockHash) {
     if (err) {
       defer.reject(err);
     } else {
-      console.log('coinbaseTransactionId %s, previousBlockHash %s', data.tx[0], data.previousblockhash);
+      console.log('[getBlock] coinbaseTransactionId %s, previousBlockHash %s', data.tx[0], data.previousblockhash);
       defer.resolve({ 'coinbaseTransactionId': data.tx[0], 'previousBlockHash': data.previousblockhash });
     }
   });
@@ -45,7 +50,7 @@ function getRawTransaction(transactionId) {
     if (err) {
       defer.reject(err);
     } else {
-      console.log('data from getRawTransaction:', data);
+      //console.log('[getRawTransaction] data from getRawTransaction:', data);
       defer.resolve(data);
     }
   });
@@ -56,26 +61,61 @@ function checkCoinBaseValue(transaction) {
   var coinbaseValue = transaction.vin[0].coinbase;
   console.log('coinbaseValue:', coinbaseValue);
   var coinbaseValueInBinary = new Buffer(coinbaseValue, 'hex')
-  console.log('coinbase binary field:', coinbaseValueInBinary);
+  //console.log('coinbase binary field:', coinbaseValueInBinary);
 
   if (bip100re.test(coinbaseValueInBinary)) {
     console.log('test is positive. BIP100 supported');
+    return true;
   } else {
     console.log('NACK. No support here.');
+    return false;
   }
 
 }
 
-getBestBlock()
-  .then(function(hash) {
-    return getBlock(hash);
-  })
-  .then(function(blockinfo) {
-    return getRawTransaction(blockinfo.coinbaseTransactionId);
-  })
-  .then(function(transaction) {
-    checkCoinBaseValue(transaction);
-  })
-  .catch(function(err) {
-    console.log('error:', err);
-  });
+function getBIPSupport() {
+
+  function recurseThroughBlocks(hash) {
+
+
+    getBlock(hash)
+      .then(function(blockinfo) {
+        //console.log('blockinfo:', blockinfo);
+        previousBlockHash = blockinfo.previousBlockHash;
+
+        return getRawTransaction(blockinfo.coinbaseTransactionId);
+      })
+      .then(function(transaction) {
+        if (checkCoinBaseValue(transaction)) {
+          bip100Support++;
+        } else {
+          notBip100Support++;
+        }
+      }).then(function() {
+        blocksChecked++
+        if (blocksChecked < blocksToLoop) {
+          console.log('blocks checked:', blocksChecked);
+          recurseThroughBlocks(previousBlockHash);
+        }
+      });
+
+  }
+
+  getBestBlock()
+    .then(function(hash) {
+      var checked = recurseThroughBlocks(hash);
+      console.log('checked:', checked);
+    })
+    .catch(function(err) {
+      console.log('error:', err);
+      console.log(err.stack);
+    });
+
+
+}
+
+getBIPSupport();
+  // .then(function(info) {
+  //   console.log('blocks checked:', info.blocksChecked);
+  //   console.log('END');
+  // })
