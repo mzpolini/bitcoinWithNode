@@ -1,13 +1,11 @@
 var bitcoin = require('bitcoin');
 var Q = require('q');
 
-
-
 var client = new bitcoin.Client({
   host:'localhost',
   port:8332,
   user:'bitcoinrpc',
-  pass:'3QtnxrB7P5y4EpBdad1MkCeB2RHmArvcarw7udgXsAce'
+  pass:'BNMWKyZoA9BzSgHDwCjdu9DZr5vgvCqLZZZg9PGGgfSD'
 });
 
 var bip100re = new RegExp('BIP100|BV[0-9]{7}');
@@ -16,6 +14,7 @@ var notBip100Support = 0;
 var blocksChecked = 0;
 var blocksToLoop = 10;
 var previousBlockHash = '';
+
 
 function getBestBlock() {
   var defer = Q.defer();

@@ -4,7 +4,7 @@ var client = new bitcoin.Client({
   host:'localhost',
   port:8332,
   user:'bitcoinrpc',
-  pass:'3QtnxrB7P5y4EpBdad1MkCeB2RHmArvcarw7udgXsAce'
+  pass:'BNMWKyZoA9BzSgHDwCjdu9DZr5vgvCqLZZZg9PGGgfSD'
 });
 
 var bip100_blocks = 0;
@@ -16,7 +16,7 @@ client.getBlockchainInfo(function(err, data) {
   if (err) throw err;
 
   if (data.blocks < 360000) {
-    console.log('Block height too low; there are no blokcs indicating support for BIP100');
+    console.log('Block height too low; there are no blocks indicating support for BIP100');
   } else {
     client.getBestBlockHash(function(err, latestBlock) {
       if (err) throw err;
